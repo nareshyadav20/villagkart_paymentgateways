@@ -30,15 +30,13 @@ export class MockICICIGateway {
       paymentMode,
       customerName,
       customerMobileNo,
-      customerEmailID,
-      returnURL
+      customerEmailID
     } = params;
 
     const tranCtx = `CTX_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const txnId = `ICICI_TXN_${Math.floor(1000000000 + Math.random() * 9000000000)}`;
     const paymentId = `PAY_${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
-    // Decide if direct OTP or redirect based on paymentMode
     let showOTPCapturePage = 'N';
     let redirectURI = '';
     let qrData = '';
@@ -46,9 +44,8 @@ export class MockICICIGateway {
     if (paymentMode === 'CARD') {
       showOTPCapturePage = 'Y';
     } else if (paymentMode === 'QR' || paymentMode === 'UPI_QR') {
-      qrData = `upi://pay?pa=prasanthbazar@icici&pn=PRASANTH+BAZAR&tr=${merchantTxnNo}&am=${amount}&cu=INR&tn=Order+${merchantTxnNo}`;
+      qrData = `upi://pay?pa=prasanthbazar@icici&pn=PRASANTH+BAZAR&mc=5411&tr=${merchantTxnNo}&am=${amount}&cu=INR&invoiceDate=${new Date().toISOString()}`;
     } else {
-      // NB, UPI intent, or WALLET redirect
       redirectURI = `${config.frontendUrl}/mock-bank-redirect?merchantTxnNo=${merchantTxnNo}&amount=${amount}&mode=${paymentMode}`;
     }
 
@@ -60,7 +57,7 @@ export class MockICICIGateway {
       customerMobile: customerMobileNo,
       customerEmail: customerEmailID,
       tranCtx,
-      otp: '123456', // standard test OTP
+      otp: '123456',
       otpVerified: false,
       status: showOTPCapturePage === 'Y' ? 'PENDING_OTP' : (qrData ? 'PENDING_QR' : 'PENDING_REDIRECT'),
       txnId,
@@ -74,7 +71,7 @@ export class MockICICIGateway {
     const responsePayload: Record<string, any> = {
       responseCode: 'R1000',
       responseDescription: 'Request initiated successfully',
-      merchantId,
+      merchantId: merchantId || config.icici.merchantId,
       merchantTxnNo,
       tranCtx,
       txnId,
@@ -87,7 +84,7 @@ export class MockICICIGateway {
       authorizeURI: `/api/payment/authorize`
     };
 
-    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
+    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'values');
     return responsePayload;
   }
 
@@ -110,7 +107,7 @@ export class MockICICIGateway {
       maskedMobileNo: `XXXXXX${state.customerMobile?.slice(-4) || '9999'}`
     };
 
-    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
+    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'values');
     return responsePayload;
   }
 
@@ -123,7 +120,6 @@ export class MockICICIGateway {
       };
     }
 
-    // Accept 123456 or any 6-digit number in test mode
     if (otp === '123456' || (otp && otp.length === 6 && /^\d+$/.test(otp))) {
       state.otpVerified = true;
       const responsePayload: Record<string, any> = {
@@ -132,7 +128,7 @@ export class MockICICIGateway {
         tranCtx,
         verificationStatus: 'SUCCESS'
       };
-      responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
+      responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'values');
       return responsePayload;
     } else {
       return {
@@ -152,13 +148,6 @@ export class MockICICIGateway {
       };
     }
 
-    if (!state.otpVerified && state.paymentMode === 'CARD') {
-      return {
-        responseCode: '002',
-        responseDescription: 'OTP has not been verified'
-      };
-    }
-
     state.status = 'SUCCESS';
 
     const responsePayload: Record<string, any> = {
@@ -175,33 +164,49 @@ export class MockICICIGateway {
       tranCtx
     };
 
-    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
+    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'values');
     return responsePayload;
   }
 
+  /**
+   * Returns exact ICICI Status Check response format
+   */
   static getStatus(merchantTxnNo: string) {
     const state = mockStore.get(merchantTxnNo);
     if (!state) {
       return {
         responseCode: '999',
-        responseDescription: 'Transaction not found',
+        txnResponseCode: '9999',
+        txnStatus: 'FAIL',
+        respDescription: 'Transaction not found',
         merchantTxnNo
       };
     }
 
+    const isSuccess = state.status === 'SUCCESS';
+
     const responsePayload: Record<string, any> = {
-      responseCode: state.status === 'SUCCESS' ? '000' : 'R1000',
-      responseDescription: state.status === 'SUCCESS' ? 'Transaction Successful' : 'Transaction in Progress',
+      txnRespDescription: isSuccess ? 'Transaction successful' : 'Transaction in progress',
+      amount: Number(state.amount).toFixed(2),
+      txnResponseCode: isSuccess ? '0000' : 'R1000',
+      txnAuthID: state.txnId,
+      authCode: `AUTH_${Math.floor(10000000 + Math.random() * 90000000)}`,
+      respDescription: 'Request processed successfully',
+      paymentMode: state.paymentMode,
+      customerEmailID: state.customerEmail || 'customer@prasanthbazar.com',
+      TransmissionDateTime: new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14),
+      oth_charge: false,
+      paymentInstId: `${state.customerMobile || '9876543210'}@upi`,
+      responseCode: isSuccess ? '000' : 'R1000',
+      customerMobileNo: state.customerMobile || '9876543210',
+      txnStatus: isSuccess ? 'SUC' : 'PENDING',
+      merchantId: config.icici.merchantId,
       merchantTxnNo: state.merchantTxnNo,
-      originalTxnNo: state.merchantTxnNo,
-      txnId: state.txnId,
-      paymentId: state.paymentId,
-      amount: String(state.amount),
-      status: state.status,
-      paymentMode: state.paymentMode
+      paymentDateTime: new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14),
+      txnID: state.txnId
     };
 
-    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
+    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'values');
     return responsePayload;
   }
 
@@ -216,6 +221,7 @@ export class MockICICIGateway {
     if (state && refundAmount > state.amount) {
       return {
         responseCode: '003',
+        txnResponseCode: '0003',
         responseDescription: 'Refund amount cannot exceed captured transaction amount',
         refundTxnNo: refNo
       };
@@ -227,6 +233,7 @@ export class MockICICIGateway {
 
     const responsePayload: Record<string, any> = {
       responseCode: '000',
+      txnResponseCode: '0000',
       responseDescription: 'Refund Processed Successfully',
       refundTxnNo: refNo,
       originalTxnNo: lookupKey,
@@ -235,7 +242,7 @@ export class MockICICIGateway {
       refundDate: new Date().toISOString()
     };
 
-    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
+    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'values');
     return responsePayload;
   }
 
@@ -243,12 +250,11 @@ export class MockICICIGateway {
     const { amount, paymentMode } = params;
     const numAmount = Number(amount) || 0;
     
-    // Realistic Indian payment gateway charges
     let chargePercent = 0;
-    if (paymentMode === 'CARD') chargePercent = 0.015; // 1.5%
-    else if (paymentMode === 'NB') chargePercent = 0.012; // 1.2%
-    else if (paymentMode === 'WALLET') chargePercent = 0.018; // 1.8%
-    else if (paymentMode === 'UPI' || paymentMode === 'QR') chargePercent = 0.00; // 0% UPI
+    if (paymentMode === 'CARD') chargePercent = 0.015;
+    else if (paymentMode === 'NB') chargePercent = 0.012;
+    else if (paymentMode === 'WALLET') chargePercent = 0.018;
+    else if (paymentMode === 'UPI' || paymentMode === 'QR') chargePercent = 0.00;
 
     const serviceCharge = Math.round(numAmount * chargePercent * 100) / 100;
     const totalPayable = numAmount + serviceCharge;
@@ -262,20 +268,26 @@ export class MockICICIGateway {
       paymentMode
     };
 
-    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
+    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'values');
     return responsePayload;
   }
 
-  static generateQR(params: Record<string, any>) {
+  /**
+   * Generates exact ICICI Generate QR response structure
+   */
+  static generateQR(params: { merchantTxnNo: string; amount: number | string }) {
     const { merchantTxnNo, amount } = params;
-    const qrString = `upi://pay?pa=prasanthbazar@icici&pn=PRASANTH+BAZAR&tr=${merchantTxnNo}&am=${amount}&cu=INR&tn=Order+${merchantTxnNo}`;
+    const formattedAmount = Number(amount).toFixed(2);
+    const invoiceDate = new Date().toISOString();
     
+    const upiQR = `upi://pay?pa=prasanthbazar@icici&pn=PRASANTH+BAZAR&mc=5411&tr=${merchantTxnNo}&am=${formattedAmount}&cu=INR&invoiceDate=${invoiceDate}`;
+
     const state: MockTransactionState = {
       merchantTxnNo,
       amount: Number(amount),
       paymentMode: 'QR',
       customerName: 'Customer',
-      customerMobile: '9999999999',
+      customerMobile: '9876543210',
       customerEmail: 'customer@prasanthbazar.com',
       tranCtx: `CTX_QR_${Date.now()}`,
       otpVerified: true,
@@ -287,16 +299,26 @@ export class MockICICIGateway {
 
     mockStore.set(merchantTxnNo, state);
 
-    const responsePayload: Record<string, any> = {
+    return {
+      respHeader: {
+        returnCode: 200,
+        desc: 'Success',
+        upiRespDesc: 'SUC'
+      },
+      respBody: {
+        merchantID: config.icici.merchantId,
+        aggregatorID: config.icici.aggregatorId,
+        merchantRefNo: merchantTxnNo,
+        bharatQR: null,
+        upiQR,
+        expiry: null,
+        serviceChargeUPI: '0',
+        serviceChargeBharatQR: null
+      },
+      qrString: upiQR,
+      amount: formattedAmount,
       responseCode: '000',
-      responseDescription: 'QR generated successfully',
-      merchantTxnNo,
-      qrString,
-      amount: String(amount),
       status: 'SUCCESS'
     };
-
-    responsePayload.secureHash = generateSecureHash(responsePayload, config.icici.secretKey, 'v1');
-    return responsePayload;
   }
 }

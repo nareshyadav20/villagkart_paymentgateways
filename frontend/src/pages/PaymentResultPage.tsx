@@ -69,6 +69,11 @@ export const PaymentResultPage: React.FC = () => {
       return;
     }
 
+    if (!isSuccess && status !== 'SUCCESS') {
+      setRefundError('Only successfully completed and authorized payments can be refunded.');
+      return;
+    }
+
     const capturedAmount = Number(transactionData?.amount || 0);
     if (capturedAmount > 0 && amountNum > capturedAmount) {
       setRefundError(`Refund amount cannot exceed captured amount (₹${capturedAmount}).`);
@@ -83,7 +88,7 @@ export const PaymentResultPage: React.FC = () => {
         reason: refundReason
       });
 
-      if (res.status === 'SUCCESS' || res.responseCode === '000') {
+      if (res.status === 'SUCCESS' || res.responseCode === '000' || res.responseCode === '0000') {
         setRefundResult(res);
         // Refresh status
         const updated = await api.checkStatus(merchantTxnNo);
@@ -92,8 +97,8 @@ export const PaymentResultPage: React.FC = () => {
         setRefundError(res.responseDescription || 'Refund was rejected by gateway.');
       }
     } catch (err: any) {
-      console.error('Refund request failed', err);
-      setRefundError(err.response?.data?.message || err.message || 'Failed to process refund.');
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to process refund.';
+      setRefundError(errorMsg);
     } finally {
       setRefundLoading(false);
     }

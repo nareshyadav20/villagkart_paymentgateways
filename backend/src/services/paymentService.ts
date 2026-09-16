@@ -117,6 +117,10 @@ export class PaymentService {
         }
       });
 
+      const paymentUrl = redirectURI
+        ? (redirectURI.includes('tranCtx=') ? redirectURI : `${redirectURI}${redirectURI.includes('?') ? '&' : '?'}tranCtx=${tranCtx}`)
+        : undefined;
+
       return {
         transactionId: updatedTxn.id,
         merchantTxnNo,
@@ -128,6 +132,7 @@ export class PaymentService {
         responseDescription: responseDesc,
         showOTPCapturePage,
         redirectURI,
+        paymentUrl,
         qrData,
         tranCtx,
         status: nextStatus
@@ -355,17 +360,27 @@ export class PaymentService {
       originalTxnNo: merchantTxnNo
     });
 
-    const isSuccess = gatewayRes.responseCode === '000' || gatewayRes.responseCode === '0000' || gatewayRes.status === 'SUCCESS';
+    const isSuccess =
+      gatewayRes.txnStatus === 'SUC' ||
+      gatewayRes.responseCode === '000' ||
+      gatewayRes.txnResponseCode === '0000' ||
+      gatewayRes.responseCode === '0000' ||
+      gatewayRes.status === 'SUCCESS';
+
+    const txnId = gatewayRes.txnID || gatewayRes.txnAuthID || gatewayRes.txnId || transaction.txnId;
+    const paymentId = gatewayRes.authCode || gatewayRes.paymentInstId || gatewayRes.paymentId || transaction.paymentId;
+    const responseDesc = gatewayRes.txnRespDescription || gatewayRes.respDescription || gatewayRes.responseDescription || (isSuccess ? 'Transaction successful' : 'Transaction in progress');
 
     if (isSuccess && transaction.status !== PaymentStatus.SUCCESS) {
       await prisma.paymentTransaction.update({
         where: { id: transaction.id },
         data: {
           status: PaymentStatus.SUCCESS,
-          responseCode: gatewayRes.responseCode,
-          responseDescription: gatewayRes.responseDescription || 'Success from status query',
-          txnId: gatewayRes.txnId || transaction.txnId,
-          paymentId: gatewayRes.paymentId || transaction.paymentId
+          responseCode: gatewayRes.txnResponseCode || gatewayRes.responseCode || '000',
+          responseDescription: responseDesc,
+          txnId,
+          paymentId,
+          rawResponse: maskSensitiveData(gatewayRes)
         }
       });
 
@@ -375,7 +390,14 @@ export class PaymentService {
       });
     }
 
-    return gatewayRes;
+    return {
+      ...gatewayRes,
+      status: isSuccess ? 'SUCCESS' : (gatewayRes.status || 'PENDING'),
+      responseCode: gatewayRes.txnResponseCode || gatewayRes.responseCode || '000',
+      responseDescription: responseDesc,
+      txnId,
+      paymentId
+    };
   }
 
   /**

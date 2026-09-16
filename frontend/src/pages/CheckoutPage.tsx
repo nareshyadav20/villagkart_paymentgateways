@@ -124,9 +124,11 @@ export const CheckoutPage: React.FC = () => {
       } else if (paymentRes.showOTPCapturePage === 'Y' && paymentRes.tranCtx) {
         // Direct Seamless OTP Screen
         navigate(`/payment/otp?tranCtx=${encodeURIComponent(paymentRes.tranCtx)}&merchantTxnNo=${paymentRes.merchantTxnNo}&amount=${paymentRes.amount}&orderNumber=${orderNumber}`);
-      } else if (paymentRes.redirectURI) {
-        // 3DS Redirect / Bank Gateway URL
-        window.location.href = paymentRes.redirectURI;
+      } else if (paymentRes.paymentUrl || paymentRes.redirectURI) {
+        // 3DS Redirect / Bank Gateway URL with tranCtx attached
+        const targetUrl = paymentRes.paymentUrl || `${paymentRes.redirectURI}${paymentRes.redirectURI.includes('?') ? '&' : '?'}tranCtx=${paymentRes.tranCtx}`;
+        console.log('[REDIRECTING_TO_ICICI_PORTAL]', targetUrl);
+        window.location.href = targetUrl;
       } else {
         // Immediate status or fallback to Result Page
         navigate(`/payment/result?merchantTxnNo=${paymentRes.merchantTxnNo}&orderNumber=${orderNumber}`);

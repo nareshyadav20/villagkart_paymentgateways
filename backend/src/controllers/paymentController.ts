@@ -216,7 +216,7 @@ export class PaymentController {
       });
     } catch (error: any) {
       console.error('[PAYMENT_CONTROLLER:REFUND_ERROR]', error);
-      res.status(500).json({
+      res.status(400).json({
         success: false,
         message: error.message || 'Refund processing failed'
       });
