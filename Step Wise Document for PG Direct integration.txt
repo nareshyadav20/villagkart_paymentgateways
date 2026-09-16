@@ -1,0 +1,172 @@
+Step Wise Document for PG Direct integration.
+
+Initiate Sale API
+
+Step 1: Create a Json request packet.
+
+Sample Request :
+
+(Key-Value pair)
+
+{
+    "merchantId": "100000000006873", - Mandatory (Fixed)
+    "merchantTxnNo": "757585887575", - Mandatory (Unique for every request) (Max character length - 20)
+    "amount": "2.00",  - Mandatory
+    "aggregatorID": "A100000000007164", - Mandatory (Required only if provided in onbarding mail)
+    "currencyCode": "356", - Mandatory (Fixed)
+    "payType": "0", - Mandatory (Fixed)
+    "customerEmailID": "dummy@gmail.com",   - Mandatory (dummy@gmail.com)
+    "transactionType": "SALE", - Mandatory (Fixed)
+    "txnDate": "20251028235959", - Mandatory (YYYYMMDDHHMMSS) Greater than Payment initiation time max (HHMMSS - 235959) with current date
+    "returnURL": "https://pgpayuat.icicibank.com/tsp/pg/api/merchant",  - Mandatory (Is customized as per merchant)
+    "customerMobileNo": "9090909090", - Non Mandatory
+    "addlParam1": "000",  - Non Mandatory
+    "addlParam2": "111", - Non Mandatory
+}
+
+Step 2: Create a Plain hashtext for generating securehash by following below steps.
+
+1. Sort the Json request packet in aplhabetical order based on the key.  Please note that the sorting logic should be implemented in a way to handle the request dynamicallly rather than hardcoding it.
+
+{
+  "addlParam1": "000",
+  "addlParam2": "111",
+  "aggregatorID": "A100000000006873",
+  "amount": "2.00",
+  "currencyCode": "356",
+  "customerEmailID": "dummy@gmail.com",
+  "customerMobileNo": "9090909090",
+  "customerName": "Narayan",
+  "merchantId": "100000000006873",
+  "merchantTxnNo": "757585887575",
+  "payType": "0",
+  "returnURL": "https://pgpayuat.icicibank.com/tsp/pg/api/merchant",
+  "transactionType": "SALE",
+  "txnDate": "20251028235959"
+}
+
+
+
+2. Create a string concatenating all the values from the sorted string.
+
+Plain hashtext format :
+
+addlParam1addlParam2aggregatorIDamountcurrencyCodecustomerEmailIDcustomerMobileNocustomerNamemerchantIdmerchantTxnNopayTypereturnURLtransactionTypetxnDate
+
+Plain hashtext value :
+
+000111A1000000000068732.00356dummy@gmail.com9090909090Narayan1000000000068737575858875750https://pgpayuat.icicibank.com/tsp/pg/api/merchantSALE20251028235959
+Step 3: Create a securehash using the hmac function.
+
+Sample PHP hmac function
+
+<?php
+
+function hmacDigest($msg, $keyString) {
+    // Create an HMAC digest using the SHA-256 algorithm
+    $digest = hash_hmac('sha256', $msg, $keyString);
+
+    return $digest;
+}
+
+// Example usage
+$msg = "your message here";
+$keyString = "your secret key";
+$digest = hmacDigest($msg, $keyString);
+echo "HMAC Digest: " . $digest;
+
+?>
+
+
+msg - Plain hashtext value
+keyString - Secret key(downloaded from dashboard) - db06cca0-838b-4e01-8b20-6ac446ffb6bd(UAT)
+
+Capture the output from the hmac function and map it to parameter secureHash.
+
+Step 4: Create final request packet along with the Secirehash generated.
+
+Sample request:
+
+{
+  "addlParam1": "000",
+  "addlParam2": "111",
+  "aggregatorID": "A100000000006873",
+  "amount": "2.00",
+  "currencyCode": "356",
+  "customerEmailID": "dummy@gmail.com",
+  "customerMobileNo": "9090909090",
+  "customerName": "Narayan",
+  "merchantId": "100000000006873",
+  "merchantTxnNo": "757585887575",
+  "payType": "0",
+  "returnURL": "https://pgpayuat.icicibank.com/tsp/pg/api/merchant",
+  "transactionType": "SALE",
+  "txnDate": "20251028235959",
+  "secureHash": "559a8a2a05027bbf931fb3a836b821c720a2c5c730b59fb42af19efa0b5dc850"
+}
+
+Step 5: Call the Initiatesale API with the request packet and capture the json response. 
+
+*Please note that the request has to be in application/json.
+
+API (UAT) - https://pgpayuat.icicibank.com/tsp/pg/api/v2/initiateSale
+API (Live) - https://pgpay.icicibank.com/pg/api/v2/initiateSale
+
+Sample curl request :
+
+curl --location 'https://pgpayuat.icicibank.com/tsp/pg/api/v2/initiateSale' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "addlParam1": "000",
+  "addlParam2": "111",
+  "aggregatorID": "A100000000006873",
+  "amount": "2.00",
+  "currencyCode": "356",
+  "customerEmailID": "dummy@gmail.com",
+  "customerMobileNo": "9090909090",
+  "customerName": "Narayan",
+  "merchantId": "100000000006873",
+  "merchantTxnNo": "757585887575",
+  "payType": "0",
+  "returnURL": "https://pgpayuat.icicibank.com/tsp/pg/api/merchant",
+  "transactionType": "SALE",
+  "txnDate": "20251028235959",
+  "secureHash": "559a8a2a05027bbf931fb3a836b821c720a2c5c730b59fb42af19efa0b5dc850"
+}'
+
+Sample response :
+
+{"responseCode":"R1000","merchantId":"T_S0001","aggregatorID":null,"merchantTxnNo":"757585887575","redirectURI":"https://pgpayuat.icicibank.com/tsp/pg/api/v2/authRedirect","showOTPCapturePage":"N","generateOTPURI":null,"verifyOTPURI":null,"authorizeURI":null,"tranCtx":"Ra3c22840-bb8b-4e44-b622-e35928b86858","secureHash":"1033eedc162c60a3dc4ed6c51fb73ddbc6f01d21d28f77cea20140747514144e"}								
+								
+
+
+Step 6: Create a final payment url using the response packet.
+
+Payment URL logic - 
+
+redirectURI?tranCtx=value
+
+https://pgpayuat.icicibank.com/tsp/pg/api/v2/authRedirect?tranCtx=Ra3c22840-bb8b-4e44-b622-e35928b86858
+
+Step 6: Capturing the payment response
+
+Once the paymnent is completed, payer will be redirected to return url provided in the payment request and the transaction response is posted on the payload of return url. 
+
+Please note that the response parameters differ with the payment mode of the transaction. So, Please handle the response capturing dynamically.
+
+
+	
+
+Payment mode details for UAT:
+
+Cards:
+
+Card Number - 4761 3400 0000 0035
+Exp - 12/25
+CVV 123
+Name - test
+ 
+
+
+
+

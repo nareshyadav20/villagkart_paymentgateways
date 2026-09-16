@@ -1,0 +1,16 @@
+MID – 100000000007164
+
+Key - db06cca0-838b-4e01-8b20-6ac446ffb6bd
+
+Agg ID - A100000000007164 
+
+ Sale 
+https://pgpayuat.icicibank.com/tsp/pg/api/v2/initiateSale 
+ 
+Refund/StatusCheck  
+https://pgpayuat.icicibank.com/tsp/pg/api/command 
+ 
+Settlement Details 
+https://pgpayuat.icicibank.com/tsp/pg/api/settlementDetails  
+
+
