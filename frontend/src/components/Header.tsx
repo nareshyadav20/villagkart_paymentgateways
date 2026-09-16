@@ -124,6 +124,9 @@ export const Header: React.FC = () => {
               <Link to="/products" className="hover:text-brand-600 transition flex items-center gap-1 font-semibold text-slate-900">
                 All Products
               </Link>
+              <Link to="/category/budget-treats" className="text-amber-600 hover:text-amber-700 font-bold transition flex items-center gap-1">
+                🍪 ₹1 - ₹10 Store
+              </Link>
               <Link to="/category/mobiles" className="hover:text-brand-600 transition">
                 Mobiles
               </Link>
@@ -197,6 +200,13 @@ export const Header: React.FC = () => {
                 className="p-2 bg-orange-50 text-brand-600 rounded-lg font-semibold"
               >
                 🔥 Today's Deals
+              </Link>
+              <Link
+                to="/category/budget-treats"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 bg-amber-50 text-amber-700 font-bold rounded-lg col-span-2 flex items-center justify-center gap-1.5"
+              >
+                🍪 ₹1 - ₹10 Budget Store (Chocolates & Biscuits)
               </Link>
               <Link
                 to="/category/mobiles"

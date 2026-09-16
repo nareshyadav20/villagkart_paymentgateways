@@ -81,26 +81,18 @@ export const CartPage: React.FC = () => {
         {/* Cart Item List (Left) */}
         <div className="lg:col-span-8 space-y-4">
           
-          {/* Free Delivery Bar */}
-          <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-200/60 p-4">
-            <div className="flex items-center justify-between text-xs font-bold mb-2">
-              <span className="flex items-center gap-1.5 text-orange-950">
-                <Truck className="w-4 h-4 text-brand-600" />
-                {amountNeededForFreeDelivery === 0 ? (
-                  <span className="text-emerald-700 font-extrabold">🎉 You unlocked FREE Delivery!</span>
-                ) : (
-                  <span>Add ₹{amountNeededForFreeDelivery.toLocaleString('en-IN')} more for FREE delivery</span>
-                )}
+          {/* 100% Free Delivery & Zero Tax Banner */}
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200/80 p-4">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="flex items-center gap-2 text-emerald-900">
+                <Truck className="w-5 h-5 text-emerald-600" />
+                <span className="text-emerald-800 font-extrabold text-xs sm:text-sm">
+                  🎉 100% FREE Delivery & Zero Extra Tax on all products!
+                </span>
               </span>
-              <span className="text-brand-600 font-mono">
-                ₹{subtotal} / ₹{freeDeliveryThreshold}
+              <span className="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
+                ₹0 Delivery
               </span>
-            </div>
-            <div className="w-full bg-orange-200/60 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-brand-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${deliveryProgress}%` }}
-              />
             </div>
           </div>
 

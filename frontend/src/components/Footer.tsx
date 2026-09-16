@@ -16,7 +16,7 @@ export const Footer: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-white">Free & Fast Delivery</h4>
-                <p className="text-xs text-slate-400">On all orders above ₹499</p>
+                <p className="text-xs text-slate-400">100% Free on all orders • Zero Tax</p>
               </div>
             </div>
 
@@ -82,6 +82,7 @@ export const Footer: React.FC = () => {
               Categories
             </h5>
             <ul className="space-y-2 text-xs">
+              <li><Link to="/category/budget-treats" className="text-amber-400 hover:text-amber-300 font-semibold transition">🍪 ₹1 - ₹10 Store</Link></li>
               <li><Link to="/category/mobiles" className="hover:text-white transition">Mobiles & 5G</Link></li>
               <li><Link to="/category/electronics" className="hover:text-white transition">Electronics & Audio</Link></li>
               <li><Link to="/category/fashion" className="hover:text-white transition">Ethnic & Casual Fashion</Link></li>

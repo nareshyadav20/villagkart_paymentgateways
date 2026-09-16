@@ -239,7 +239,7 @@ export const ProductDetailPage: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-500">
                 <div className="flex flex-col items-center gap-1">
                   <Truck className="w-4 h-4 text-brand-500" />
-                  <span>Free Delivery ₹499+</span>
+                  <span>100% Free Delivery</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />

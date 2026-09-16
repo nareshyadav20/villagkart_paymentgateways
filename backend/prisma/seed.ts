@@ -1,14 +1,23 @@
 import { PrismaClient } from '@prisma/client';
+import process from 'node:process';
 
 const prisma = new PrismaClient();
 
 const categories = [
   {
+    name: '₹1 - ₹10 Store',
+    slug: 'budget-treats',
+    description: 'Chocolates, biscuits, candies and sweet treats from ₹1 to ₹10 for instant low-value test checkout',
+    icon: 'Cookie',
+    displayOrder: 1,
+    bannerUrl: 'https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=1200&q=80'
+  },
+  {
     name: 'Mobiles',
     slug: 'mobiles',
     description: 'Latest 5G smartphones, flagship devices and accessories',
     icon: 'Smartphone',
-    displayOrder: 1,
+    displayOrder: 2,
     bannerUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&q=80'
   },
   {
@@ -16,7 +25,7 @@ const categories = [
     slug: 'electronics',
     description: 'Smart watches, headphones, laptops, bluetooth speakers and smart gadgets',
     icon: 'Laptop',
-    displayOrder: 2,
+    displayOrder: 3,
     bannerUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200&q=80'
   },
   {
@@ -24,7 +33,7 @@ const categories = [
     slug: 'fashion',
     description: 'Ethnic wear, trendy t-shirts, kurtis, shoes and apparel',
     icon: 'Shirt',
-    displayOrder: 3,
+    displayOrder: 4,
     bannerUrl: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=1200&q=80'
   },
   {
@@ -32,7 +41,7 @@ const categories = [
     slug: 'home-kitchen',
     description: 'Cookware sets, mixer grinders, air fryers and home decor',
     icon: 'UtensilsCrossed',
-    displayOrder: 4,
+    displayOrder: 5,
     bannerUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1200&q=80'
   },
   {
@@ -40,7 +49,7 @@ const categories = [
     slug: 'grocery',
     description: 'Basmati rice, pure spices, cold pressed oils and pulses',
     icon: 'ShoppingBasket',
-    displayOrder: 5,
+    displayOrder: 6,
     bannerUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&q=80'
   },
   {
@@ -48,7 +57,7 @@ const categories = [
     slug: 'beauty',
     description: 'Skincare, herbal face wash, organic shampoos and fragrances',
     icon: 'Sparkles',
-    displayOrder: 6,
+    displayOrder: 7,
     bannerUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1200&q=80'
   },
   {
@@ -56,7 +65,7 @@ const categories = [
     slug: 'accessories',
     description: 'Waterproof backpacks, leather wallets, aviators and belts',
     icon: 'Watch',
-    displayOrder: 7,
+    displayOrder: 8,
     bannerUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1200&q=80'
   },
   {
@@ -64,12 +73,164 @@ const categories = [
     slug: 'daily-essentials',
     description: 'LED lights, organizers, laundry essentials and hygiene products',
     icon: 'Zap',
-    displayOrder: 8,
+    displayOrder: 9,
     bannerUrl: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=1200&q=80'
   }
 ];
 
 const products = [
+  // ₹1 - ₹10 Store (Chocolates, Biscuits, Candies)
+  {
+    name: 'Cadbury Dairy Milk Chocolate Bar (13g)',
+    slug: 'cadbury-dairy-milk-13g',
+    description: 'Rich, smooth and creamy classic milk chocolate bar from Cadbury. The quintessential sweet treat for every celebration.',
+    price: 10,
+    originalPrice: 10,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1548907040-4baa42d10919?w=800&q=80',
+    rating: 4.9,
+    ratingCount: 8420,
+    featured: true,
+    brand: 'Cadbury',
+    tags: ['Chocolate', 'Cadbury', 'Dairy Milk', '₹10']
+  },
+  {
+    name: 'Nestle KitKat 2-Finger Wafer Bar (12.8g)',
+    slug: 'nestle-kitkat-2-finger',
+    description: 'Crispy wafer fingers covered in delicious smooth milk chocolate. Have a break, have a KitKat!',
+    price: 10,
+    originalPrice: 10,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=800&q=80',
+    rating: 4.8,
+    ratingCount: 6540,
+    featured: true,
+    brand: 'Nestle',
+    tags: ['Chocolate', 'KitKat', 'Wafer', '₹10']
+  },
+  {
+    name: 'Britannia Bourbon Chocolate Cream Biscuits (50g)',
+    slug: 'britannia-bourbon-biscuits-50g',
+    description: 'Crunchy chocolate biscuits filled with decadent chocolate cream and sprinkled with sparkling sugar crystals.',
+    price: 10,
+    originalPrice: 12,
+    discountPercent: 17,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=800&q=80',
+    rating: 4.7,
+    ratingCount: 5120,
+    featured: true,
+    brand: 'Britannia',
+    tags: ['Biscuits', 'Bourbon', 'Chocolate', '₹10']
+  },
+  {
+    name: 'Nestle Munch Crunchy Chocolate Wafer (9.5g)',
+    slug: 'nestle-munch-wafer-9g',
+    description: 'Crunchy wafer bar coated with rich chocolate coating for the ultimate crunch and delight.',
+    price: 5,
+    originalPrice: 5,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800&q=80',
+    rating: 4.6,
+    ratingCount: 7890,
+    featured: true,
+    brand: 'Nestle',
+    tags: ['Chocolate', 'Munch', 'Wafer', '₹5']
+  },
+  {
+    name: 'Cadbury 5 Star Chocolate Bar (10.1g)',
+    slug: 'cadbury-5-star-10g',
+    description: 'Delicious mix of chewy caramel, soft nougat center, and smooth milk chocolate.',
+    price: 5,
+    originalPrice: 5,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1581798459219-318e76aecc7b?w=800&q=80',
+    rating: 4.6,
+    ratingCount: 4320,
+    featured: false,
+    brand: 'Cadbury',
+    tags: ['Chocolate', '5 Star', 'Caramel', '₹5']
+  },
+  {
+    name: 'Parle-G Original Glucose Biscuits (50g)',
+    slug: 'parle-g-glucose-biscuits-50g',
+    description: 'India\'s largest selling biscuit brand packed with the wholesome goodness of wheat and milk. The perfect chai companion.',
+    price: 5,
+    originalPrice: 5,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=800&q=80',
+    rating: 4.9,
+    ratingCount: 15800,
+    featured: true,
+    brand: 'Parle',
+    tags: ['Biscuits', 'Parle-G', 'Glucose', '₹5']
+  },
+  {
+    name: 'Britannia Good Day Butter Cookies (30g)',
+    slug: 'britannia-good-day-butter-30g',
+    description: 'Rich butter cookies with delightful aroma and smile pattern design that brightens every moment.',
+    price: 5,
+    originalPrice: 5,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=800&q=80',
+    rating: 4.7,
+    ratingCount: 6200,
+    featured: false,
+    brand: 'Britannia',
+    tags: ['Cookies', 'Good Day', 'Butter', '₹5']
+  },
+  {
+    name: 'Pass Pass Pulse Tangy Mango Candy (Pack of 5)',
+    slug: 'pulse-tangy-mango-candy-pack5',
+    description: 'Tangy kaccha aam raw mango hard candy filled with an electrifying burst of spicy amchur masala.',
+    price: 5,
+    originalPrice: 5,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?w=800&q=80',
+    rating: 4.8,
+    ratingCount: 9340,
+    featured: false,
+    brand: 'DS Group',
+    tags: ['Candy', 'Pulse', 'Tangy', '₹5']
+  },
+  {
+    name: 'Center Fresh Spearmint Chewing Gum (Pack of 2)',
+    slug: 'center-fresh-spearmint-pack2',
+    description: 'Delicious liquid-filled spearmint gum that delivers an instant burst of cooling fresh breath.',
+    price: 2,
+    originalPrice: 2,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1575224300306-1b8da36134ec?w=800&q=80',
+    rating: 4.5,
+    ratingCount: 3900,
+    featured: false,
+    brand: 'Perfetti',
+    tags: ['Chewing Gum', 'Mint', 'Fresh', '₹2']
+  },
+  {
+    name: 'Chlormint Ice Mint Herbal Drop Candy',
+    slug: 'chlormint-ice-mint-drop',
+    description: 'Classic cooling Ayurvedic herbal mint candy for soothing freshness — Dobara Mat Poochna!',
+    price: 1,
+    originalPrice: 1,
+    discountPercent: 0,
+    categorySlug: 'budget-treats',
+    imageUrl: 'https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?w=800&q=80',
+    rating: 4.6,
+    ratingCount: 4800,
+    featured: false,
+    brand: 'Perfetti',
+    tags: ['Candy', 'Mint', '₹1', 'Herbal']
+  },
+
   // Mobiles
   {
     name: 'Samsung Galaxy S24 5G (Onyx Black, 256GB)',

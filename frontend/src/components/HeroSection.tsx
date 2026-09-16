@@ -52,7 +52,7 @@ export const HeroSection: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-700/60 text-xs text-slate-300">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Free Delivery ₹499+</span>
+                <span>Free Delivery (All Items)</span>
               </div>
               <div className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-brand-400 shrink-0" />

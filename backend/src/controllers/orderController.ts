@@ -59,10 +59,10 @@ export class OrderController {
         });
       }
 
-      // Delivery charges: Free for orders >= ₹499, else ₹40 standard delivery
-      const deliveryCharge = subtotal >= 499 ? 0 : 40;
+      // Delivery charges & Taxes: 100% Free Delivery (₹0) and Zero Tax for all orders
+      const deliveryCharge = 0;
       const discount = 0; // standard promotional discounts if applied
-      const totalAmount = subtotal + deliveryCharge - discount;
+      const totalAmount = subtotal;
 
       const orderNumber = `PB-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
 

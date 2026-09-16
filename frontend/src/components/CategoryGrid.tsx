@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
+  Cookie,
   Smartphone, 
   Laptop, 
   Shirt, 
@@ -17,6 +18,7 @@ interface CategoryGridProps {
 }
 
 const defaultCategories = [
+  { name: '₹1 - ₹10 Store', slug: 'budget-treats', icon: Cookie, color: 'from-amber-500 to-rose-600', count: '10 Items' },
   { name: 'Mobiles', slug: 'mobiles', icon: Smartphone, color: 'from-blue-500 to-indigo-600', count: '4 Items' },
   { name: 'Electronics', slug: 'electronics', icon: Laptop, color: 'from-purple-500 to-violet-600', count: '6 Items' },
   { name: 'Fashion', slug: 'fashion', icon: Shirt, color: 'from-pink-500 to-rose-600', count: '4 Items' },
@@ -47,7 +49,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = () => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
         {defaultCategories.map((cat) => {
           const IconComponent = cat.icon;
           return (
