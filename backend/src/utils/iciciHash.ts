@@ -74,7 +74,7 @@ export function buildSortedKeyValueConcatenatedString(params: Record<string, any
 export function generateSecureHash(
   data: Record<string, any> | string,
   secretKey: string,
-  mode: 'values' | 'keyvalue' | 'v2' = 'values'
+  mode: 'values' | 'keyvalue' | 'v2' | 'v1' = 'values'
 ): string {
   if (!secretKey) {
     throw new Error('ICICI Secret Key is missing for secureHash generation.');
@@ -95,7 +95,7 @@ export function generateSecureHash(
       delete copy.hash;
       textToHash = JSON.stringify(copy);
     }
-  } else if (mode === 'keyvalue') {
+  } else if (mode === 'keyvalue' || mode === 'v1') {
     textToHash = typeof data === 'string' ? data : buildSortedKeyValueConcatenatedString(data);
   } else {
     // Default: 'values' sorted concatenation
@@ -113,13 +113,19 @@ export function generateSecureHash(
 export function verifySecureHash(
   data: Record<string, any> | string,
   receivedHash: string,
-  secretKey: string
+  secretKey: string,
+  mode?: 'values' | 'keyvalue' | 'v2' | 'v1'
 ): boolean {
   if (!receivedHash || !secretKey) {
     return false;
   }
 
   try {
+    if (mode === 'v2') {
+      const computed = generateSecureHash(data, secretKey, 'v2');
+      return computed.toLowerCase() === receivedHash.toLowerCase();
+    }
+
     // Try both values and keyvalue modes to ensure compatibility with all response types
     const hashValues = generateSecureHash(data, secretKey, 'values');
     const hashKeyValue = generateSecureHash(data, secretKey, 'keyvalue');

@@ -1,27 +1,42 @@
-# PRASANTH BAZAR
+# PRASANTH BAZAR - ICICI Bank Payment Gateway Integration
 
-A modern, production-grade dynamic e-commerce web application and testing platform for **ICICI Bank Payment Gateway** APIs.
+A modern, production-grade dynamic e-commerce shopping platform and testing suite for **ICICI Bank Payment Gateway** APIs.
 
-Designed for frictionless Indian online shopping with **Zero Login / Zero Signups required** (anyone can open the store and checkout immediately), featuring comprehensive implementation of the ICICI Bank Payment Gateway Interface Specifications.
+Designed for frictionless Indian online shopping with **Zero Login / Zero Signups required** (anyone can open the store and checkout immediately), fully configured and verified with the **ICICI Bank UAT Environment**.
+
+---
+
+## 🔑 Configured ICICI Bank UAT Credentials
+
+| Parameter | Configured Value |
+|---|---|
+| **Merchant ID (MID)** | `100000000007164` |
+| **Aggregator ID (Agg ID)** | `A100000000007164` |
+| **Secret Key** | `db06cca0-838b-4e01-8b20-6ac446ffb6bd` |
+| **Initiate Sale Endpoint** | `https://pgpayuat.icicibank.com/tsp/pg/api/v2/initiateSale` |
+| **Status / Refund Command** | `https://pgpayuat.icicibank.com/tsp/pg/api/command` |
+| **Settlement Details** | `https://pgpayuat.icicibank.com/tsp/pg/api/settlementDetails` |
+| **Currency Code** | `356` (INR) |
+| **Transaction Type** | `SALE` |
+| **Pay Type** | `0` |
 
 ---
 
 ## 🚀 Key Highlights
 
 - **Direct Shopping (No Login / No Password)**: Anyone can browse, add to cart, and checkout in seconds.
-- **ICICI Bank Payment Gateway**:
-  - **SecureHash V1**: Key-value alphabetical sorting + HMAC-SHA256 lowercase hex.
-  - **SecureHash V2**: Minified JSON serialization + HMAC-SHA256 lowercase hex.
+- **ICICI Bank Payment Gateway Integration**:
+  - **SecureHash Algorithm**: Dynamic alphabetical key sorting + values concatenation + HMAC-SHA256 lowercase hex (as specified in ICICI Direct integration guide).
   - **Direct Seamless Card Flow**: `Initiate Sale` → `Generate OTP` → `Verify OTP` (`tranCtx`) → `Authorize`.
-  - **3D Secure / NetBanking Redirect Flow**: `Initiate Sale` → `redirectURI` → Bank 3DS Authentication → Merchant Callback (`/api/payment/callback`).
+  - **3D Secure / NetBanking Redirect Flow**: `Initiate Sale` → `redirectURI?tranCtx=...` → Bank 3DS Authentication → Merchant Return Callback (`/api/payment/callback`).
   - **Dynamic UPI QR Code**: `Generate QR` → Real-time status polling → Instant confirmation.
   - **Server-to-Server Status Query**: Real-time reconciliation via `POST /api/payment/status`.
   - **Refund Processing**: Safe partial & full refund execution via `POST /api/payment/refund`.
   - **Payment Surcharge Calculator**: Form-urlencoded inquiry via `POST /api/payment/service-charges`.
   - **Payment Advice Webhook**: Acknowledges gateway notifications via `POST /api/payment/advice`.
-  - **Developer Inspector**: Audit console showing gateway request logs, response codes, and hash verification statuses.
+  - **Developer Inspector**: Audit console at `/dev/transactions` showing live gateway request logs, response codes, and hash verification statuses.
 - **Rich Catalog**: 32 realistic Indian products across 8 categories (Mobiles, Electronics, Fashion, Home & Kitchen, Grocery, Beauty, Accessories, Daily Essentials) with Indian Rupee (₹) pricing.
-- **Database Persistence**: PostgreSQL via **Prisma ORM** (Supabase connection pooler & direct session support).
+- **Database Persistence**: PostgreSQL via **Prisma ORM** on Supabase.
 
 ---
 
@@ -32,7 +47,7 @@ Designed for frictionless Indian online shopping with **Zero Login / Zero Signup
 | **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons, React Router v7 |
 | **Backend** | Node.js, Express, TypeScript, Axios, Native `crypto` |
 | **Database** | PostgreSQL, Prisma ORM (Supabase) |
-| **Payment Gateway** | ICICI Bank Payment Gateway Specification (Dual Mock/Live mode) |
+| **Payment Gateway** | ICICI Bank Payment Gateway UAT / Production API Suite |
 
 ---
 
@@ -45,7 +60,7 @@ prasanth-bazar/
 │   │   ├── schema.prisma        # Prisma models for Orders, Items, Transactions, Refunds
 │   │   └── seed.ts              # Seeds 32 products and 8 categories
 │   ├── src/
-│   │   ├── config/index.ts      # Environment validation
+│   │   ├── config/index.ts      # ICICI UAT credentials & URLs
 │   │   ├── controllers/         # Product, Order, and Payment controllers
 │   │   ├── middleware/          # Express error handling
 │   │   ├── routes/              # Express REST routes
@@ -55,7 +70,7 @@ prasanth-bazar/
 │   │   │   │   └── mockGateway.ts   # ICICI Sandbox simulator
 │   │   │   └── paymentService.ts    # High-level payment orchestrator
 │   │   ├── utils/
-│   │   │   └── iciciHash.ts     # SecureHash V1 and V2 generation & verification
+│   │   │   └── iciciHash.ts     # SecureHash generation & verification
 │   │   └── server.ts            # Main backend server
 │   ├── .env.example
 │   └── package.json
@@ -74,53 +89,25 @@ prasanth-bazar/
 │   ├── vite.config.ts
 │   └── package.json
 │
-├── API_TESTING.md               # Curl commands for all endpoints
+├── API_TESTING.md               # Ready-to-use cURL requests
 ├── README.md
 └── .gitignore
 ```
 
 ---
 
-## ⚙️ Environment Variables (`backend/.env`)
-
-```env
-# Server
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
-
-# Supabase PostgreSQL
-DATABASE_URL="postgresql://postgres.dhhllyugetdmslekdggs:X5FEAtEgddnGpEq9@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.dhhllyugetdmslekdggs:X5FEAtEgddnGpEq9@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
-
-# Mode: "mock" for built-in sandbox simulator, "icici" for live gateway
-PAYMENT_PROVIDER=mock
-IS_TEST_ENVIRONMENT=true
-
-# ICICI Bank Credentials
-ICICI_MERCHANT_ID=TEST_MERCHANT_01
-ICICI_AGGREGATOR_ID=
-ICICI_SECRET_KEY=TEST_SECRET_KEY_1234567890ABCDEF
-ICICI_API_BASE_URL=https://pgpaytest.icicibank.com/pg/api/v2
-ICICI_RETURN_URL=http://localhost:5000/api/payment/callback
-ICICI_ADVICE_URL=http://localhost:5000/api/payment/advice
-ICICI_SETTLEMENT_ADVICE_URL=http://localhost:5000/api/payment/settlement-advice
-```
-
----
-
 ## 📦 Setup & Running Locally
 
-### 1. Backend Setup
+### 1. Backend
 ```bash
 cd backend
 npm install
-npx prisma db push      # Syncs schema to Supabase PostgreSQL
-npm run prisma:seed    # Seeds 32 Indian products
+npx prisma db push      # Syncs schema with Supabase PostgreSQL
+npm run prisma:seed    # Seeds 32 realistic products
 npm run dev            # Starts backend on http://localhost:5000
 ```
 
-### 2. Frontend Setup
+### 2. Frontend
 ```bash
 cd frontend
 npm install
@@ -129,41 +116,26 @@ npm run dev            # Starts Vite dev server on http://localhost:5173
 
 ---
 
-## 🔒 ICICI SecureHash Logic
+## 🔒 ICICI SecureHash Calculation Flow
 
-Implemented in `backend/src/utils/iciciHash.ts`:
+As per `Step Wise Document for PG Direct integration.txt`:
 
-### Hash V1:
-1. Filter non-empty / non-null request parameters (exclude `secureHash`).
-2. Sort parameters alphabetically by key.
-3. Concatenate format: `key1value1key2value2...`.
-4. Generate `HMAC-SHA256(concatenatedString, secretKey)`.
-5. Convert output to lowercase hexadecimal string.
-
-### Hash V2:
-1. Serialize JSON payload into minified JSON string (no whitespace or formatting).
-2. Generate `HMAC-SHA256(minifiedJson, secretKey)`.
-3. Convert output to lowercase hexadecimal string.
+1. **Sort keys alphabetically** in ascending order.
+2. **Concatenate all parameter values** in that sorted order (omitting `secureHash`, null, and empty strings).
+3. **Compute HMAC-SHA256**:
+   ```typescript
+   const hmac = crypto.createHmac('sha256', secretKey);
+   hmac.update(concatenatedValues, 'utf8');
+   const secureHash = hmac.digest('hex').toLowerCase();
+   ```
+4. Transmit `secureHash` in the request body.
 
 ---
 
-## 🧪 Testing Scenarios
+## 💳 Test Card Details for ICICI UAT
 
-1. **Seamless Card OTP Flow**:
-   - Add product to cart → Checkout → Select **Card** → Place Order.
-   - You will be redirected to `/payment/otp`.
-   - Use the auto-fill test OTP `123456` → Click **Verify & Authorize** → Receive Payment Success screen!
-2. **Dynamic UPI QR Code Flow**:
-   - Add product to cart → Checkout → Select **Dynamic QR** → Place Order.
-   - Dynamic QR code will load with a live 5-minute countdown.
-   - Click **Simulate Instant UPI Payment** → Status updates instantly!
-3. **Refund Test**:
-   - On the `/payment/result` page of any successful transaction, click **Test Gateway Refund API**.
-   - Enter refund amount (up to total captured amount) → Confirm refund.
-4. **Developer Payment Inspector**:
-   - Navigate to `/dev/transactions` to inspect real-time transaction logs, masked payloads, response codes, and SecureHash verification.
-
----
-
-## 📄 License
-MIT. PRASANTH BAZAR.
+- **Card Number**: `4761 3400 0000 0035`
+- **Expiry**: `12/25`
+- **CVV**: `123`
+- **Name**: `Test Customer`
+- **Sandbox OTP**: `123456`

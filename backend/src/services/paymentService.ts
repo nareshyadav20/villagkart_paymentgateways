@@ -81,7 +81,7 @@ export class PaymentService {
       const qrData = gatewayResponse.qrData;
       const showOTPCapturePage = gatewayResponse.showOTPCapturePage;
 
-      let nextStatus = PaymentStatus.INITIATED;
+      let nextStatus: PaymentStatus = PaymentStatus.INITIATED;
       if (showOTPCapturePage === 'Y') {
         nextStatus = PaymentStatus.PENDING_OTP;
       } else if (qrData || paymentMode === 'QR') {
@@ -279,7 +279,7 @@ export class PaymentService {
     // Record callback payload
     let hashVerified = false;
     if (secureHash && config.icici.secretKey) {
-      hashVerified = verifySecureHash(payload, secureHash, config.icici.secretKey, 'v1');
+      hashVerified = verifySecureHash(payload, secureHash, config.icici.secretKey);
     }
 
     if (merchantTxnNo) {

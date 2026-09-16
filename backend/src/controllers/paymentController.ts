@@ -300,7 +300,7 @@ export class PaymentController {
 
       const secureHash = payload.secureHash || payload.hash;
       if (secureHash) {
-        const isValid = verifySecureHash(payload, secureHash, config.icici.secretKey, 'v1');
+        const isValid = verifySecureHash(payload, secureHash, config.icici.secretKey);
         if (!isValid) {
           return res.status(400).json({ responseCode: '999', responseDescription: 'Invalid SecureHash' });
         }
